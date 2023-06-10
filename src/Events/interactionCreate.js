@@ -68,6 +68,8 @@ async function execute(interaction) {
 	}
 
 	if (interaction.isMessageContextMenuCommand()) {
+		const GUILD_ID = interaction.guildId;
+		const CHANNEL_ID = interaction.channelId;
 		const MESSAGE_ID = interaction.targetId;
 		let messageCount = 0;
 
@@ -83,7 +85,7 @@ async function execute(interaction) {
 			})
 			.catch(console.error);
 
-		embed = Embed.CreateEmbed(Embed.type.info, `Naliczono wiadomości: *${messageCount}*`);
+		embed = Embed.CreateEmbed(Embed.type.info, `Do [wybranej wiadomości](https://discord.com/channels/${GUILD_ID}/${CHANNEL_ID}/${MESSAGE_ID}) naliczono ***${messageCount}*** wiadomości włącznie`);
 		return interaction.editReply({ embeds: [embed] });
 	}
 }
