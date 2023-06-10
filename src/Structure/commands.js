@@ -26,8 +26,10 @@ for (const FOLDER of COMMAND_FOLDERS) {
 					client.commands.set(command.data.name, command);
 
 					console.log(`Command ${command.data.name} loaded.`);
+				} else if (!command.isContextMenuCommand) {
+					console.log(`${chalk.yellowBright('WARNING')} The command at ${COMMANDS_PATH}.js is missing a required "data" or "execute" property and isn't a context menu command.`);
 				} else {
-					console.log(`${chalk.yellowBright('WARNING')} The command at ${COMMANDS_PATH}.js is missing a required "data" or "execute" property.`);
+					console.log(`Context menu command ${command.rawName} loaded.`);
 				}
 			});
 		});

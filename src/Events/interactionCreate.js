@@ -66,6 +66,26 @@ async function execute(interaction) {
 			return Post.updateOne({ postID: CHANNEL_ID }, { lockMessageID: lockMessageID }, { upsert: true });
 		}
 	}
+
+	if (interaction.isMessageContextMenuCommand()) {
+		const MESSAGE_ID = interaction.targetId;
+		let messageCount = 0;
+
+		let embed = Embed.CreateEmbed(Embed.type.info, 'Trwa liczenie...');
+		await interaction.deferReply({ embeds: [embed], ephemeral: true });
+
+		await interaction.channel.messages.fetch({ limit: 100, cache: false, after: MESSAGE_ID })
+			.then(messages => {
+				if (messages.size == 100)
+					messageCount = '100 lub więcej';
+				else
+					messageCount = messages.size + 1;
+			})
+			.catch(console.error);
+
+		embed = Embed.CreateEmbed(Embed.type.info, `Naliczono wiadomości: *${messageCount}*`);
+		return interaction.editReply({ embeds: [embed] });
+	}
 }
 
 export { name, execute };
