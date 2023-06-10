@@ -9,7 +9,6 @@ const postSchema = new Schema({
   claimedBy: Array,
   claimMessageID: mongoose.Decimal128,
   lockMessageID: mongoose.Decimal128,
-  code: Number,
 });
 
 const Post = mongoose.model('Post', postSchema);

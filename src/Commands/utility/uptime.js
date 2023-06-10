@@ -4,7 +4,7 @@ import { Embed } from '../../Utilities/Utilities.js';
 
 const data = new SlashCommandBuilder()
 	.setName('uptime')
-	.setDescription('Wyświetla czas pracy bota.');
+	.setDescription('Wyświetla czas pracy bota');
 
 async function execute(interaction) {
 	const UPTIME = client.uptime;

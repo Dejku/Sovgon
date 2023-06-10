@@ -1,4 +1,6 @@
-import { Logger, Embed } from "../Utilities/Utilities.js";
+import { EmbedBuilder } from 'discord.js';
+import Post from '../Data/models/postModel.js';
+import { Logger, Embed, Emoji } from "../Utilities/Utilities.js";
 
 const name = 'interactionCreate';
 async function execute(interaction) {
@@ -12,19 +14,27 @@ async function execute(interaction) {
 		return false;
 	}
 
-	if (interaction.isChatInputCommand()) {
-		const command = interaction.client.commands.get(interaction.commandName);
+	function CapitalizeFirstLetters(string) {
+		return string
+			.toLowerCase()
+			.split(' ')
+			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(' ');
+	}
 
-		if (!command)
+	if (interaction.isChatInputCommand()) {
+		const COMMAND = interaction.client.commands.get(interaction.commandName);
+
+		if (!COMMAND)
 			return Logger.warn(`Komenda "${interaction.commandName}" nie została odnaleziona!`);
 
-		if (CheckPermissions(command)) {
+		if (CheckPermissions(COMMAND)) {
 			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Nie posiadasz odpowiednich uprawnień do używania tej komendy!');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 
 		try {
-			await command.execute(interaction);
+			await COMMAND.execute(interaction);
 		} catch (error) {
 			Logger.error(error);
 
@@ -33,6 +43,27 @@ async function execute(interaction) {
 				return interaction.followUp({ embeds: [EMBED], ephemeral: true });
 			else
 				return interaction.reply({ embeds: [EMBED], ephemeral: true });
+		}
+	}
+
+	if (interaction.isModalSubmit()) {
+		const CHANNEL_ID = interaction.channel.id;
+
+		if (interaction.customId === 'closingPost') {
+			const REASON = interaction.fields.getTextInputValue('closingReason');
+			const STATUS = interaction.fields.getTextInputValue('closingstatus');
+			let lockMessageID;
+
+			const EMBED = new EmbedBuilder()
+				.setColor(Embed.color.info)
+				.setTitle(`${Emoji.info()} Post zamknięty`)
+				.setDescription(`**Status**: ${CapitalizeFirstLetters(STATUS)}\n**Powód**:\n  ${REASON}`)
+				.setFooter({ text: `Aby odblokować użyj "/post open"` });
+
+			await interaction.reply({ embeds: [EMBED], fetchReply: true })
+				.then(result => lockMessageID = result.id);
+			await interaction.channel.setLocked(true, `Closed requested by ${interaction.user.username.toString()}`);
+			return Post.updateOne({ postID: CHANNEL_ID }, { lockMessageID: lockMessageID }, { upsert: true });
 		}
 	}
 }

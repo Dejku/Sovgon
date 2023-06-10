@@ -3,7 +3,7 @@ import { Logger, Embed } from '../../Utilities/Utilities.js';
 
 const data = new SlashCommandBuilder()
 	.setName('clear')
-	.setDescription('Usuwa określoną ilość (dostępnych) wiadomości.')
+	.setDescription('Usuwa określoną ilość (dostępnych) wiadomości')
 	.addIntegerOption(option => option.setName('ilość')
 		.setDescription('Ile usunąć?')
 		.setMaxValue(100)

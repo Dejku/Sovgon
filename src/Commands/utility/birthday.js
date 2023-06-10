@@ -5,18 +5,18 @@ import months from '../../Data/monthsNames.js';
 
 const data = new SlashCommandBuilder()
 	.setName('birthday')
-	.setDescription('Umożliwia zarządzanie kalendarzem urodzinowym.')
+	.setDescription('Umożliwia zarządzanie kalendarzem urodzinowym')
 	.addSubcommand(subcommand => subcommand
 		.setName('next')
-		.setDescription('Wyświetla najbliższe urodziny z kalendarza.'))
+		.setDescription('Wyświetla najbliższe urodziny z kalendarza'))
 	.addSubcommand(subcommand => subcommand
 		.setName('show')
-		.setDescription('Wyświetla urodziny wskazanej osoby/wszystkich na liście.')
+		.setDescription('Wyświetla urodziny wskazanej osoby/wszystkich na liście')
 		.addUserOption(option => option.setName('kto')
 			.setDescription('Użytkownik')))
 	.addSubcommand(subcommand => subcommand
 		.setName('add')
-		.setDescription('Dodaje urodziny wskazanej osoby do kalendarza urodzinowego.')
+		.setDescription('Dodaje urodziny wskazanej osoby do kalendarza urodzinowego')
 		.addUserOption(option => option.setName('kto')
 			.setDescription('Użytkownik')
 			.setRequired(true))
@@ -44,7 +44,7 @@ const data = new SlashCommandBuilder()
 			)))
 	.addSubcommand(subcommand => subcommand
 		.setName('remove')
-		.setDescription('Usuwa urodziny wskazanej osoby z kalendarza urodzinowego.')
+		.setDescription('Usuwa urodziny wskazanej osoby z kalendarza urodzinowego')
 		.addUserOption(option => option.setName('kto')
 			.setDescription('Użytkownik')
 			.setRequired(true)));

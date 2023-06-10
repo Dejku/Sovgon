@@ -1,33 +1,23 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
 import Post from '../../Data/models/postModel.js';
 import { Embed } from '../../Utilities/Utilities.js';
 
 const permissions = 'developer';
 const data = new SlashCommandBuilder()
 	.setName('post')
-	.setDescription('Umożliwia zarządzanie postami.')
+	.setDescription('Umożliwia zarządzanie postami')
 	.addSubcommand(subcommand => subcommand
 		.setName('open')
-		.setDescription('Otwiera post oraz umożliwia pisanie w nim.'))
+		.setDescription('Otwiera post oraz umożliwia pisanie w nim'))
 	.addSubcommand(subcommand => subcommand
 		.setName('close')
-		.setDescription('Zamyka post oraz uniemożliwia dalsze pisanie w nim.')
-		.addStringOption(option => option.setName('status')
-			.setDescription('Status postu podczas zamknięcia.')
-			.setRequired(true)
-			.addChoices(
-				{ name: 'Ukończone', value: 'finished' },
-				{ name: 'Nie Do Naprawienia', value: 'unfixable' },
-				{ name: 'Odrzucone', value: 'rejected' },
-			))
-		.addStringOption(option => option.setName('powód')
-			.setDescription('Powód zablokowania postu.')))
+		.setDescription('Zamyka post oraz uniemożliwia dalsze pisanie w nim'))
 	.addSubcommand(subcommand => subcommand
 		.setName('claim')
-		.setDescription('Dopisuje użytkownika do listy osób zajmujących się postem.'))
+		.setDescription('Dopisuje użytkownika do listy osób zajmujących się postem'))
 	.addSubcommand(subcommand => subcommand
 		.setName('unclaim')
-		.setDescription('Wypisuje użytkownika z listy osób zajmujących się postem.'));
+		.setDescription('Wypisuje użytkownika z listy osób zajmujących się postem'));
 
 async function execute(interaction) {
 	if (!interaction.channel.isThread()) {
@@ -38,61 +28,59 @@ async function execute(interaction) {
 	const CHANNEL_ID = interaction.channel.id;
 
 	let lockMessage;
-	let lockMessageID = await Post.find({ postID: CHANNEL_ID }).then(result => {
+	const LOCK_MESSAGE_ID = await Post.find({ postID: CHANNEL_ID }).then(result => {
 		if (result.length != 0)
 			return result[0].lockMessageID;
 	});
 
-	if (lockMessageID != undefined)
-		await interaction.channel.messages.fetch({ around: lockMessageID, limit: 1 }).then(result => lockMessage = result);
+	if (LOCK_MESSAGE_ID != undefined)
+		await interaction.channel.messages.fetch({ around: LOCK_MESSAGE_ID, limit: 1 }).then(result => lockMessage = result);
 
 	if (interaction.options.getSubcommand() === 'open') {
 		if (interaction.channel.locked) {
 			await interaction.channel.setLocked(false);
 			await lockMessage.first().delete();
-			const EMBED = Embed.CreateEmbed(Embed.type.success, 'Post został odblokowany');
+
+			const EMBED = Embed.CreateEmbed(Embed.type.success, 'Post został otwarty');
 			return interaction.reply({ embeds: [EMBED], fetchReply: true }).then(msg => setTimeout(() => msg.delete(), 5000));
 		}
 		else {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już odblokowany');
-			return interaction.reply({ embeds: [EMBED], content: 'Post jest już odblokowany', ephemeral: true });
+			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już otwarty');
+			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 	}
 
 	if (interaction.options.getSubcommand() === 'close') {
 		if (interaction.channel.locked) {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już zablokowany');
+			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już zamknięty');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 		else {
-			const REASON = interaction.options.getString('powód') ?? 'Brak podanego powodu';
-			let status = interaction.options.getString('status');
-			let color, code;
+			const MODEL = new ModalBuilder()
+				.setCustomId('closingPost')
+				.setTitle('Formularz zamknięcia postu');
 
-			if (status === 'finished') {
-				status = 'Ukończone';
-				color = 'Green';
-				code = 0;
-			} else if (status === 'unfixable') {
-				status = 'Nie Do Naprawienia';
-				color = 'Red';
-				code = 1;
-			} else {
-				status = 'Odrzucone';
-				color = 'Red';
-				code = 2;
-			}
+			const STATUS_INPUT = new TextInputBuilder()
+				.setCustomId('closingstatus')
+				.setLabel("Jaki jest status postu?")
+				.setStyle(TextInputStyle.Short)
+				.setPlaceholder('Ukończony/Nie Do Naprawienia/Odrzucony/Inny')
+				.setRequired(true);
 
-			const EMBED = new EmbedBuilder()
-				.setColor(color)
-				.setTitle(`:lock: Post zamknięty`)
-				.setDescription(`Status: **${status}**\nPowód: **${REASON}**`)
-				.setFooter({ text: `Aby odblokować użyj "/post open"` });
+			const REASON_INPUT = new TextInputBuilder()
+				.setCustomId('closingReason')
+				.setLabel("Jaki jest powód zamknięcia (jeśli istnieje)?")
+				.setValue('Brak podanego powodu')
+				.setPlaceholder('Brak podanego powodu')
+				.setStyle(TextInputStyle.Paragraph)
+				.setRequired(false);
 
-			await interaction.reply({ embeds: [EMBED], fetchReply: true })
-				.then(result => lockMessageID = result.id);
-			await interaction.channel.setLocked(true, `Closed by ${interaction.user.username.toString()}`);
-			return Post.updateOne({ postID: CHANNEL_ID }, { lockMessageID: lockMessageID, code: code }, { upsert: true });
+			const STATUS_ACTION_ROW = new ActionRowBuilder().addComponents(STATUS_INPUT);
+			const REASON_ACTION_ROW = new ActionRowBuilder().addComponents(REASON_INPUT);
+
+			MODEL.addComponents(STATUS_ACTION_ROW, REASON_ACTION_ROW);
+
+			return interaction.showModal(MODEL);
 		}
 	}
 
@@ -112,13 +100,13 @@ async function execute(interaction) {
 	});
 
 	const FormatUsers = (user) => {
-		return user.map(s => `<@${s}>`);
+		return user.map(u => `<@${u}>`);
 	};
 
 	const EmbedMessage = (description) => {
 		return new EmbedBuilder()
 			.setColor("Blue")
-			.setTitle(`:wrench: Post przejęty przez`)
+			.setTitle(`:wrench: Uczestnicy prac:`)
 			.setDescription(`**${description}**`)
 			.setFooter({ text: `Aby się wypisać użyj "/post unclaim"` });
 	};

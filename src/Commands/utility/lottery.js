@@ -7,21 +7,21 @@ import { Embed, Logger } from '../../Utilities/Utilities.js';
 const permissions = 'cmd';
 const data = new SlashCommandBuilder()
     .setName('loteria')
-    .setDescription('Komendy dotyczące loterii mikołajkowej.')
+    .setDescription('Komendy dotyczące loterii mikołajkowej')
     .addSubcommand(subcommand => subcommand
         .setName('wynik')
-        .setDescription('Losuje pary z listy osób zapisanych na losowanie mikołajkowe.'))
+        .setDescription('Losuje pary z listy osób zapisanych na losowanie mikołajkowe'))
     .addSubcommand(subcommand => subcommand
         .setName('lista')
-        .setDescription('Wyświetla listę osób aktualnie biorących udział w losowaniu.'))
+        .setDescription('Wyświetla listę osób aktualnie biorących udział w losowaniu'))
     .addSubcommand(subcommand => subcommand
         .setName('usuń')
-        .setDescription('Usuwa podaną osobę z losowania lub czyści całą listę.')
+        .setDescription('Usuwa podaną osobę z losowania lub czyści całą listę')
         .addUserOption(option => option.setName('kto')
             .setDescription('Kogo usunąć? (zostaw puste dla całej listy)')))
     .addSubcommand(subcommand => subcommand
         .setName('dodaj')
-        .setDescription('Dodaje wskazaną osobę do losowania.')
+        .setDescription('Dodaje wskazaną osobę do losowania')
         .addUserOption(option => option.setName('kto')
             .setDescription('Kogo dodać?')
             .setRequired(true)));

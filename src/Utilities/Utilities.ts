@@ -34,15 +34,24 @@ export class Emoji {
     }
 }
 
+enum EmbedColors {
+    success = `DarkGreen`,
+    info = `DarkBlue`,
+    warning = `Yellow`,
+    error = `Red`,
+    loading = `Blue`
+}
+
 enum EmbedTypes {
-    success = `DarkGreen,${EmojiEnum.success}`,
-    info = `DarkBlue,${EmojiEnum.info}`,
-    warning = `Yellow,${EmojiEnum.warning}`,
-    error = `Red,${EmojiEnum.error}`,
-    loading = `Blue,${EmojiEnum.loading}`
+    success = `${EmbedColors.success},${EmojiEnum.success}`,
+    info = `${EmbedColors.info},${EmojiEnum.info}`,
+    warning = `${EmbedColors.warning},${EmojiEnum.warning}`,
+    error = `${EmbedColors.error},${EmojiEnum.error}`,
+    loading = `${EmbedColors.loading},${EmojiEnum.loading}`
 }
 
 export class Embed {
+    static color = EmbedColors;
     static type = EmbedTypes;
 
     static CreateEmbed(embedType: EmbedTypes, description: string): EmbedBuilder {

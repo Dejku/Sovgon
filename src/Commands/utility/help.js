@@ -3,7 +3,7 @@ import client from '../../Structure/client.js';
 
 const data = new SlashCommandBuilder()
 	.setName('help')
-	.setDescription('Wyświetla okno pomocy.');
+	.setDescription('Wyświetla okno pomocy');
 
 async function execute(interaction) {
 	await interaction.client.application.fetch();
