@@ -43,6 +43,7 @@ cron.schedule('00 13 * * *', async () => {
 
             let channel = client.channels.cache.get(CHANNEL_ID);
 
+            await (channel as TextChannel).send('@everyone');
             return (channel as TextChannel).send({ embeds: [EMBED] });
         });
     } catch (err) { console.error(err); }
