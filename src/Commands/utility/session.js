@@ -7,7 +7,7 @@ import {
     ActionRowBuilder,
 } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Embed, Emoji } from '../../Utilities/Utilities.js';
+import { Color, Embed, Emoji } from '../../Utilities/Utilities.js';
 import Session from '../../Data/models/sessionModel.js';
 
 const data = new SlashCommandBuilder()
@@ -65,7 +65,7 @@ async function execute(interaction) {
 
     if (interaction.options.getSubcommand() === 'info') {
         const EMBED = new EmbedBuilder()
-            .setColor(Embed.color.info)
+            .setColor(Color.info)
             .setTitle(`${Emoji.info()}  Informacje na temat sesji testowych`)
             .setDescription(SESSION_DESC);
         return interaction.reply({ embeds: [EMBED], ephemeral: true });
@@ -85,7 +85,7 @@ async function execute(interaction) {
         const FORUM = interaction.options.getChannel('forum');
 
         let embed = new EmbedBuilder()
-            .setColor(Embed.color.info)
+            .setColor(Color.info)
             .setTitle(`${Emoji.info()}  Informacje na temat sesji testowych`)
             .setDescription(SESSION_DESC);
 
@@ -109,12 +109,12 @@ async function execute(interaction) {
         const ENDING_DATE_EPOCH = interaction.options.getInteger('zakończenie') ?? TODAY_EPOCH + ONE_WEEK_EPOCH;
 
         if (!isDateValid(new Date(ENDING_DATE_EPOCH))) {
-            const EMBED = Embed.CreateEmbed(Embed.type.error, 'Niepoprawna data zakończenia!');
+            const EMBED = Embed.CreateEmbed(Embed.type.error, 'Niepoprawna data!');
             return interaction.reply({ embeds: [EMBED], ephemeral: true });
         }
 
         let embed = new EmbedBuilder()
-            .setColor(Embed.color.info)
+            .setColor(Color.info)
             .setTitle(`${Emoji.info()}  Rozpoczęto sesję testową!`)
             .setDescription(`Przed rozpoczęciem, jeśli tego jeszcze nie zrobiłeś(-aś), zapoznaj się z instrukcją w przypiętej wiadomości na samej górze tego [forum](${FORUM.url}). Następnie kliknij w przycisk "Pobierz materiały" znajdujący się poniżej, a później możesz już rozpocząć testowanie. **Udanych łowów**`)
             .addFields(
@@ -169,7 +169,7 @@ async function execute(interaction) {
         }
 
         let embed = new EmbedBuilder()
-            .setColor(Embed.color.info)
+            .setColor(Color.info)
             .setTitle(`${Emoji.info()}  Sesja została zamknięta`);
         await THREAD.send({ embeds: [embed] });
         await Session.updateOne({ channelID: THREAD.id }, { $set: { "isFinished": true } }).catch(error => console.error(error));

@@ -183,7 +183,7 @@ async function execute(interaction) {
             });
 
         if (isCopy) {
-            const EMBED = Embed.CreateEmbed(Embed.type.warning, `Ta osoba jest już zapisana do loterii`);
+            const EMBED = Embed.CreateEmbed(Embed.type.info, `Ta osoba jest już zapisana do loterii`);
             return interaction.editReply({ embeds: [EMBED], ephemeral: true });
         }
         else {

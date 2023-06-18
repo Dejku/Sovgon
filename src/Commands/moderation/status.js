@@ -9,7 +9,7 @@ const data = new SlashCommandBuilder()
 function execute(interaction) {
 	client.user.setPresence({ status: 'online', activities: [{ name: '/help' }] });
 
-	const EMBED = Embed.CreateEmbed(Embed.type.info, 'Status został zresetowany!');
+	const EMBED = Embed.CreateEmbed(Embed.type.success, 'Status został zresetowany!');
 	return interaction.reply({ embeds: [EMBED], ephemeral: true });
 }
 

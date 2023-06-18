@@ -8,6 +8,16 @@ import client from "../Structure/client.js";
 import { config } from "dotenv";
 config();
 
+// COLORS
+export enum Color {
+    success = `DarkGreen`,
+    info = `DarkBlue`,
+    warning = `Yellow`,
+    error = `Red`,
+    loading = `Blue`
+}
+
+// EMOJI
 enum EmojiEnum {
     success = "1114590500096327690",
     info = "1108516851673219153",
@@ -34,27 +44,19 @@ export class Emoji {
     }
 }
 
-enum EmbedColors {
-    success = `DarkGreen`,
-    info = `DarkBlue`,
-    warning = `Yellow`,
-    error = `Red`,
-    loading = `Blue`
-}
-
-enum EmbedTypes {
-    success = `${EmbedColors.success},${EmojiEnum.success}`,
-    info = `${EmbedColors.info},${EmojiEnum.info}`,
-    warning = `${EmbedColors.warning},${EmojiEnum.warning}`,
-    error = `${EmbedColors.error},${EmojiEnum.error}`,
-    loading = `${EmbedColors.loading},${EmojiEnum.loading}`
+// EMBED
+enum EmbedType {
+    success = `${Color.success},${EmojiEnum.success}`,
+    info = `${Color.info},${EmojiEnum.info}`,
+    warning = `${Color.warning},${EmojiEnum.warning}`,
+    error = `${Color.error},${EmojiEnum.error}`,
+    loading = `${Color.loading},${EmojiEnum.loading}`
 }
 
 export class Embed {
-    static color = EmbedColors;
-    static type = EmbedTypes;
+    static type = EmbedType;
 
-    static CreateEmbed(embedType: EmbedTypes, description: string): EmbedBuilder {
+    static CreateEmbed(embedType: EmbedType, description: string): EmbedBuilder {
         let color = 'Random'; let emoji: GuildEmoji | undefined;
 
         const OPTIONS = embedType.split(",");
@@ -69,59 +71,73 @@ export class Embed {
     }
 }
 
+// LOGGER
+
+enum Guild {
+    dev = `1094372846727348305`,
+    akang = `1118549625993965689`
+}
+
 export class Logger {
+    static guild = Guild;
+
     /**
      * Sends informational message in log channel
      * @param {string} message Message content
+     * @param {Guild} guild Guild where the message will be sent. Default: dev
      */
-    static success(message: string): void {
+    static success(message: string, guild?: Guild): void {
         const TITLE = `${Emoji.success()}  Success`;
         const COLOR = "DarkGreen";
 
-        sendLoggerEmbedMessage(TITLE, message, COLOR);
+        sendLoggerEmbedMessage(COLOR, TITLE, message, guild);
     }
 
     /**
      * Sends informational message in log channel
      * @param {string} message Message content
+     * @param {Guild} guild Guild where the message will be sent. Default: dev
      */
-    static info(message: string): void {
+    static info(message: string, guild?: Guild): void {
         const TITLE = `${Emoji.info()}  Information`;
         const COLOR = "DarkBlue";
 
-        sendLoggerEmbedMessage(TITLE, message, COLOR);
+        sendLoggerEmbedMessage(COLOR, TITLE, message, guild);
     }
 
     /**
      * Sends warning message in log channel
      * @param {string} message Message content
+     * @param {Guild} guild Guild where the message will be sent. Default: dev
      */
-    static warn(message: string): void {
+    static warn(message: string, guild?: Guild): void {
         const TITLE = `${Emoji.warning()}  Warning`;
         const COLOR = "Yellow";
 
-        sendLoggerEmbedMessage(TITLE, message, COLOR);
+        sendLoggerEmbedMessage(COLOR, TITLE, message, guild);
     }
 
     /**
      * Sends error message in log channel
      * @param {string} message Message content
+     * @param {Guild} guild Guild where the message will be sent. Default: dev
      */
-    static error(message: string): void {
+    static error(message: string, guild?: Guild): void {
         const TITLE = `${Emoji.error()}  Error`;
         const COLOR = "Red";
 
-        sendLoggerEmbedMessage(TITLE, message, COLOR);
+        sendLoggerEmbedMessage(COLOR, TITLE, message, guild);
     }
 };
 
-function sendLoggerEmbedMessage(title: string, message: string, color: ColorResolvable): void {
+function sendLoggerEmbedMessage(color: ColorResolvable, title: string, message: string, guild?: Guild): void {
     const EMBED = new EmbedBuilder()
         .setColor(color)
         .setTitle(title)
         .setDescription(message)
         .setTimestamp();
 
-    const CHANNEL = client.channels.cache.get(process.env.logsChannelID as string);
+    if (guild == undefined) guild = Guild.dev;
+    const CHANNEL = client.channels.cache.get(guild);
     (CHANNEL as TextChannel).send({ embeds: [EMBED] });
 }

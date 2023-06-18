@@ -52,14 +52,14 @@ async function execute(interaction) {
 			return interaction.reply({ embeds: [EMBED], fetchReply: true }).then(msg => setTimeout(() => msg.delete(), 5000));
 		}
 		else {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już otwarty');
+			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Post był już otwarty');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 	}
 
 	if (interaction.options.getSubcommand() === 'close') {
 		if (interaction.channel.locked) {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Post jest już zamknięty');
+			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Post był już zamknięty');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 		else {
@@ -122,7 +122,7 @@ async function execute(interaction) {
 
 	if (interaction.options.getSubcommand() === 'claim') {
 		if (claimedBy.includes(USER)) {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Jesteś już na liście');
+			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Jesteś już na liście');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 		claimedBy.push(USER);
@@ -156,7 +156,7 @@ async function execute(interaction) {
 
 	if (interaction.options.getSubcommand() === 'unclaim') {
 		if (!claimedBy.includes(USER)) {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Spoko, nie było Cię na liście');
+			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Spoko, nie było Cię na liście');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 		claimedBy = claimedBy.filter(user => user !== USER);

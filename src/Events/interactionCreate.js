@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import Post from '../Data/models/postModel.js';
-import { Logger, Embed, Emoji } from "../Utilities/Utilities.js";
+import { Logger, Embed, Emoji, Color } from "../Utilities/Utilities.js";
 
 const name = 'interactionCreate';
 async function execute(interaction) {
@@ -57,7 +57,7 @@ async function execute(interaction) {
 			if (reason == "") reason = 'Brak podanego powodu';
 
 			const EMBED = new EmbedBuilder()
-				.setColor(Embed.color.info)
+				.setColor(Color.info)
 				.setTitle(`${Emoji.info()} Post zamknięty`)
 				.setDescription(`**Status**: ${CapitalizeFirstLetters(STATUS)}\n**Powód**: ${reason}`)
 				.setFooter({ text: `Aby odblokować użyj "/post open"` });

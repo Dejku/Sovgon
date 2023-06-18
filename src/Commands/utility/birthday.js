@@ -193,7 +193,7 @@ async function execute(interaction) {
 			.then(result => {
 				let embed;
 				if (result.deletedCount === 0)
-					embed = Embed.CreateEmbed(Embed.type.warning, 'Podana osoba nie została odnaleziona! Możliwe, że nie była wpisana do kalendarza');
+					embed = Embed.CreateEmbed(Embed.type.error, 'Podana osoba nie została odnaleziona! Możliwe, że nie była wpisana do kalendarza');
 				else
 					embed = Embed.CreateEmbed(Embed.type.success, `Usunięto <@${USER.id}> z kalendzarza urodzinowego`);
 
