@@ -50,14 +50,16 @@ async function execute(interaction) {
 		const CHANNEL_ID = interaction.channel.id;
 
 		if (interaction.customId === 'closingPost') {
-			const REASON = interaction.fields.getTextInputValue('closingReason');
+			let reason = interaction.fields.getTextInputValue('closingReason');
 			const STATUS = interaction.fields.getTextInputValue('closingstatus');
 			let lockMessageID;
+
+			if (reason == "") reason = 'Brak podanego powodu';
 
 			const EMBED = new EmbedBuilder()
 				.setColor(Embed.color.info)
 				.setTitle(`${Emoji.info()} Post zamknięty`)
-				.setDescription(`**Status**: ${CapitalizeFirstLetters(STATUS)}\n**Powód**:\n  ${REASON}`)
+				.setDescription(`**Status**: ${CapitalizeFirstLetters(STATUS)}\n**Powód**: ${reason}`)
 				.setFooter({ text: `Aby odblokować użyj "/post open"` });
 
 			await interaction.reply({ embeds: [EMBED], fetchReply: true })
