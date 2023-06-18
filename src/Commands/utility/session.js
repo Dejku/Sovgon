@@ -168,6 +168,11 @@ async function execute(interaction) {
             return interaction.reply({ embeds: [EMBED], ephemeral: true });
         }
 
+        if (!THREAD.isThread()) {
+            const EMBED = Embed.CreateEmbed(Embed.type.error, `Wybrany kanał nie jest wątkiem w forum`);
+            return interaction.reply({ embeds: [EMBED], ephemeral: true });
+        }
+
         let embed = new EmbedBuilder()
             .setColor(Color.info)
             .setTitle(`${Emoji.info()}  Sesja została zamknięta`);
