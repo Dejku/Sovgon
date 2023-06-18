@@ -26,19 +26,19 @@ async function execute(interaction) {
 		const COMMAND = interaction.client.commands.get(interaction.commandName);
 
 		if (!COMMAND)
-			return Logger.warn(`Komenda "${interaction.commandName}" nie została odnaleziona!`);
+			return Logger.error(`Komenda "${interaction.commandName}" nie została odnaleziona!`);
 
 		if (CheckPermissions(COMMAND)) {
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Nie posiadasz odpowiednich uprawnień do używania tej komendy!');
+			const EMBED = Embed.CreateEmbed(Embed.type.error, 'Nie posiadasz odpowiednich uprawnień do używania tej komendy!');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 
 		try {
 			await COMMAND.execute(interaction);
 		} catch (error) {
-			Logger.error(error);
+			Logger.error(`${error}`);
 
-			const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Wystąpił problem podczas wywoływania tej komendy!');
+			const EMBED = Embed.CreateEmbed(Embed.type.error, 'Wystąpił problem podczas wywoływania tej komendy!');
 			if (interaction.replied || interaction.deferred)
 				return interaction.followUp({ embeds: [EMBED], ephemeral: true });
 			else

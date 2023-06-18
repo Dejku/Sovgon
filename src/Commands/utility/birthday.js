@@ -12,20 +12,24 @@ const data = new SlashCommandBuilder()
 	.addSubcommand(subcommand => subcommand
 		.setName('show')
 		.setDescription('Wyświetla urodziny wskazanej osoby/wszystkich na liście')
-		.addUserOption(option => option.setName('kto')
+		.addUserOption(option => option
+			.setName('kto')
 			.setDescription('Użytkownik')))
 	.addSubcommand(subcommand => subcommand
 		.setName('add')
 		.setDescription('Dodaje urodziny wskazanej osoby do kalendarza urodzinowego')
-		.addUserOption(option => option.setName('kto')
+		.addUserOption(option => option
+			.setName('kto')
 			.setDescription('Użytkownik')
 			.setRequired(true))
-		.addIntegerOption(option => option.setName('dzień')
+		.addIntegerOption(option => option
+			.setName('dzień')
 			.setDescription('Dzień urodzin')
 			.setRequired(true)
 			.setMinValue(1)
 			.setMaxValue(31))
-		.addIntegerOption(option => option.setName('miesiąc')
+		.addIntegerOption(option => option
+			.setName('miesiąc')
 			.setDescription('Miesiąc urodzin')
 			.setRequired(true)
 			.addChoices(
@@ -45,7 +49,8 @@ const data = new SlashCommandBuilder()
 	.addSubcommand(subcommand => subcommand
 		.setName('remove')
 		.setDescription('Usuwa urodziny wskazanej osoby z kalendarza urodzinowego')
-		.addUserOption(option => option.setName('kto')
+		.addUserOption(option => option
+			.setName('kto')
 			.setDescription('Użytkownik')
 			.setRequired(true)));
 
@@ -55,15 +60,15 @@ async function execute(interaction) {
 	const MONTH = DATE.getUTCMonth() + 1;
 	const TODAY = new Date(`${MONTH} ${DAY}, ${DATE.getFullYear()} 13:00:00`);
 
-	function DateIsValid(date) {
+	function isDateValid(date) {
 		return date instanceof Date && !isNaN(date);
 	}
 
-	function AuthUser(member) {
+	function CheckPermissions(member) {
 		if (member.roles.cache.some(role => role.name === 'cmd'))
 			return true;
-
-		return false;
+		else
+			return false;
 	}
 
 	function GetDifference(month, day) {
@@ -137,7 +142,7 @@ async function execute(interaction) {
 		return interaction.reply({ embeds: [EMBED] });
 	}
 
-	if (!AuthUser(interaction.member)) {
+	if (!CheckPermissions(interaction.member)) {
 		const EMBED = Embed.CreateEmbed(Embed.type.warning, 'Nie posiadasz odpowiednich uprawnień do używania tej komendy!');
 		return interaction.reply({ embeds: [EMBED], ephemeral: true });
 	}
@@ -150,7 +155,7 @@ async function execute(interaction) {
 		const BIRTHDAY_DATE = new Date(`${months[BIRTHDAY_MONTH - 1].eng} ${BIRTHDAY_DAY}, ${DATE.getFullYear()} 13:00:00`); // Format: eg. "July 1, 1978 02:30:00"
 		const BIRTHDAY_EPOCH = Math.floor(BIRTHDAY_DATE.getTime() / 1000);
 
-		if (!DateIsValid(new Date(BIRTHDAY_EPOCH))) {
+		if (!isDateValid(new Date(BIRTHDAY_EPOCH))) {
 			const EMBED = Embed.CreateEmbed(Embed.type.error, 'Niepoprawna data!');
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}

@@ -1,4 +1,11 @@
-import { SlashCommandBuilder, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle,
+	ActionRowBuilder,
+} from 'discord.js';
 import Post from '../../Data/models/postModel.js';
 import { Embed } from '../../Utilities/Utilities.js';
 
@@ -56,7 +63,7 @@ async function execute(interaction) {
 			return interaction.reply({ embeds: [EMBED], ephemeral: true });
 		}
 		else {
-			const MODEL = new ModalBuilder()
+			const MODAL = new ModalBuilder()
 				.setCustomId('closingPost')
 				.setTitle('Formularz zamknięcia postu');
 
@@ -78,9 +85,9 @@ async function execute(interaction) {
 			const STATUS_ACTION_ROW = new ActionRowBuilder().addComponents(STATUS_INPUT);
 			const REASON_ACTION_ROW = new ActionRowBuilder().addComponents(REASON_INPUT);
 
-			MODEL.addComponents(STATUS_ACTION_ROW, REASON_ACTION_ROW);
+			MODAL.addComponents(STATUS_ACTION_ROW, REASON_ACTION_ROW);
 
-			return interaction.showModal(MODEL);
+			return interaction.showModal(MODAL);
 		}
 	}
 

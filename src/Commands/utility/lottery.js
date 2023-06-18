@@ -17,12 +17,14 @@ const data = new SlashCommandBuilder()
     .addSubcommand(subcommand => subcommand
         .setName('usuń')
         .setDescription('Usuwa podaną osobę z losowania lub czyści całą listę')
-        .addUserOption(option => option.setName('kto')
+        .addUserOption(option => option
+            .setName('kto')
             .setDescription('Kogo usunąć? (zostaw puste dla całej listy)')))
     .addSubcommand(subcommand => subcommand
         .setName('dodaj')
         .setDescription('Dodaje wskazaną osobę do losowania')
-        .addUserOption(option => option.setName('kto')
+        .addUserOption(option => option
+            .setName('kto')
             .setDescription('Kogo dodać?')
             .setRequired(true)));
 
