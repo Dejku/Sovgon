@@ -50,7 +50,7 @@ async function execute(interaction) {
     }
 
     function CheckPermissions(member) {
-        if (member.roles.cache.some(role => role.name === 'developer'))
+        if (member.roles.cache.some(role => role.name.toLowerCase() === 'developer'))
             return true;
         else
             return false;
@@ -133,10 +133,10 @@ async function execute(interaction) {
 
         let sessionTag;
         await Session.find().sort({ sessionTAG: -1 }).limit(1).then(result => {
-            if (result.length < 1) sessionTag = 0;
+            if (result.length < 1) sessionTag = 1;
             else sessionTag = result[0].sessionTAG + 1;
         });
-        if (isNaN(sessionTag)) sessionTag = 0;
+        if (isNaN(sessionTag)) sessionTag = 1;
         sessionTag = formatTag(sessionTag, 5);
 
         const THREAD_ID = `${GetDate()}/${sessionTag}`;
