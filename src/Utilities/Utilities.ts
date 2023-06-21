@@ -8,6 +8,12 @@ import client from "../Structure/client.js";
 import { config } from "dotenv";
 config();
 
+// PERMISSIONS
+export enum Permission {
+    cmd = 'cmd',
+    developer = 'developer',
+}
+
 // COLORS
 export enum Color {
     success = `DarkGreen`,

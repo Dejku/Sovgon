@@ -2,9 +2,9 @@ import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import Lottery from '../../Data/models/lotteryModel.js';
 import BLOCKED_RESULTS from '../../Data/blockedResults.js';
 import client from '../../Structure/client.js';
-import { Embed, Logger } from '../../Utilities/Utilities.js';
+import { Embed, Logger, Permission } from '../../Utilities/Utilities.js';
 
-const permissions = 'cmd';
+const permissions = Permission.cmd;
 const data = new SlashCommandBuilder()
     .setName('loteria')
     .setDescription('Komendy dotyczące loterii mikołajkowej')

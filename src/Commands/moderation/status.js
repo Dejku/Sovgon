@@ -1,8 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Embed } from '../../Utilities/Utilities.js';
+import { Embed, Permission } from '../../Utilities/Utilities.js';
 
-const permissions = 'cmd';
+const permissions = Permission.cmd;
 const data = new SlashCommandBuilder()
 	.setName('status')
 	.setDescription('Zresetuj status bota');

@@ -7,7 +7,7 @@ import {
     ActionRowBuilder,
 } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Color, Embed, Emoji } from '../../Utilities/Utilities.js';
+import { Color, Embed, Emoji, Permission } from '../../Utilities/Utilities.js';
 import Session from '../../Data/models/sessionModel.js';
 
 const data = new SlashCommandBuilder()
@@ -50,7 +50,7 @@ async function execute(interaction) {
     }
 
     function CheckPermissions(member) {
-        if (member.roles.cache.some(role => role.name.toLowerCase() === 'developer'))
+        if (member.roles.cache.some(role => role.name.toLowerCase() === Permission.developer))
             return true;
         else
             return false;
