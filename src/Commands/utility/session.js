@@ -5,9 +5,12 @@ import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
+    GuildScheduledEventManager,
+    GuildScheduledEventPrivacyLevel,
+    GuildScheduledEventEntityType,
 } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Color, Embed, Emoji, Permission } from '../../Utilities/Utilities.js';
+import { Color, Embed, Emoji, Permission, isDateValid } from '../../Utilities/Utilities.js';
 import Session from '../../Data/models/sessionModel.js';
 
 const data = new SlashCommandBuilder()
@@ -45,10 +48,6 @@ const data = new SlashCommandBuilder()
             .setDescription('ID kanału sesji do zamknięcia')));
 
 async function execute(interaction) {
-    function isDateValid(date) {
-        return date instanceof Date && !isNaN(date);
-    }
-
     function CheckPermissions(member) {
         if (member.roles.cache.some(role => role.name.toLowerCase() === Permission.developer))
             return true;

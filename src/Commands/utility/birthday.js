@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import Birthday from '../../Data/models/birthdayModel.js';
-import { Embed } from '../../Utilities/Utilities.js';
+import { Embed, isDateValid } from '../../Utilities/Utilities.js';
 import months from '../../Data/monthsNames.js';
 
 const data = new SlashCommandBuilder()
@@ -59,10 +59,6 @@ async function execute(interaction) {
 	const DAY = DATE.getUTCDate();
 	const MONTH = DATE.getUTCMonth() + 1;
 	const TODAY = new Date(`${MONTH} ${DAY}, ${DATE.getFullYear()} 13:00:00`);
-
-	function isDateValid(date) {
-		return date instanceof Date && !isNaN(date);
-	}
 
 	function CheckPermissions(member) {
 		if (member.roles.cache.some(role => role.name === 'cmd'))

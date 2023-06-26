@@ -147,3 +147,8 @@ function sendLoggerEmbedMessage(color: ColorResolvable, title: string, message: 
     const CHANNEL = client.channels.cache.get(guild);
     (CHANNEL as TextChannel).send({ embeds: [EMBED] });
 }
+
+// VALIDATE DATE
+export function isDateValid(date: Date) {
+    return date instanceof Date && !isNaN(date as any);
+}
