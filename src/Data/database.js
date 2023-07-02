@@ -9,5 +9,11 @@ mongoose.set('strictQuery', false);
 mongoose.connect(process.env.database).catch(error => Logger.error(error));
 
 mongoose.connection.on('connected', () => { console.log("\nDatabase: ", chalk.greenBright('OK')); });
-mongoose.connection.on('disconnected', () => { console.log("\nDatabase: ", chalk.redBright('NOK')); });
-mongoose.connection.on('error', error => { console.log("\nDatabase: ", chalk.redBright('ERROR'), error); });
+mongoose.connection.on('disconnected', message => {
+    console.log("\nDatabase: ", chalk.redBright('DISCONNECTED'), message);
+    Logger.error(message);
+});
+mongoose.connection.on('error', error => {
+    console.log("\nDatabase: ", chalk.redBright('ERROR'), error);
+    Logger.error(error);
+});
