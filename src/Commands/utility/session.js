@@ -5,9 +5,6 @@ import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
-    GuildScheduledEventManager,
-    GuildScheduledEventPrivacyLevel,
-    GuildScheduledEventEntityType,
 } from 'discord.js';
 import client from '../../Structure/client.js';
 import { Color, Embed, Emoji, Permission, isDateValid } from '../../Utilities/Utilities.js';
@@ -60,7 +57,7 @@ async function execute(interaction) {
     }
 
     const formatTag = (num, places) => String(num).padStart(places, '0');
-    const SESSION_DESC = `**Czym one są?**\nSesja testowa jest to okres w którym trwają testy nad różnymi funkcjami. Testerzy mają ustalony czas na pobranie materiałów. przetestowanie ich oraz opublikowanie wyników. Każda sesja posiada własny dedykowany kanał stwarzany gdy tylko sesja się rozpocznie.\n\n**Jak przebiega cały proces?**\nStworzony zostanie nowy wątek w forum, następnie pierwsza wiadomość będzie zawierała przycisk z linkiem do materiałów do pobrania. Testerzy po swoich próbach, wysyłają wyniki na kanał przeznaczony tej sesji z której brali materiały do testowania. Każda sesja posiada swój własny identyfikator, przykład - **SESJA NR#14/6/2023/27153**.\n\n**Ile trwają sesje?**\nRóżnie, domyślnie jest to tydzień, lecz zawsze czas ten może być zmieniony. Data rozpoczęcia oraz planowana data zakończenia sesji są zawsze podane na kanale sesji.`;
+    const SESSION_DESC = `**Czym one są?**\nSesja testowa (w skrócie: **S/T**) jest to okres w którym trwają testy nad różnymi funkcjami. Testerzy mają ustalony czas na pobranie materiałów. przetestowanie ich oraz opublikowanie wyników. Każda sesja posiada własny dedykowany kanał stwarzany gdy tylko sesja się rozpocznie.\n\n**Jak przebiega cały proces?**\nStworzony zostanie nowy wątek w forum, następnie pierwsza wiadomość będzie zawierała przycisk z linkiem do materiałów do pobrania. Testerzy po swoich próbach, wysyłają wyniki na kanał przeznaczony tej sesji z której brali materiały do testowania. Każda sesja posiada swój własny identyfikator, przykład - **S/T NR#14/6/2023/27153**.\n\n**Ile trwają sesje?**\nRóżnie, domyślnie jest to tydzień, lecz zawsze czas ten może być zmieniony. Data rozpoczęcia oraz planowana data zakończenia sesji są zawsze podane na kanale sesji.`;
 
     if (interaction.options.getSubcommand() === 'info') {
         const EMBED = new EmbedBuilder()
@@ -79,6 +76,7 @@ async function execute(interaction) {
     const TODAY_EPOCH = Math.floor(DATE.getTime() / 1000);
     const ONE_WEEK_EPOCH = 604800;
     const CREATED_BY = interaction.user;
+    const REASON = `New Session Created By ${CREATED_BY.username}`;
 
     if (interaction.options.getSubcommand() === 'setup') {
         const FORUM = interaction.options.getChannel('forum');
@@ -91,7 +89,7 @@ async function execute(interaction) {
         const THREAD = await FORUM.threads.create({
             name: `INFORMACJE NA TEMAT SESJI TESTOWYCH`,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-            reason: `Requested by ${CREATED_BY.username}`,
+            reason: REASON,
             message: { embeds: [embed] },
         });
 
@@ -138,11 +136,11 @@ async function execute(interaction) {
         if (isNaN(sessionTag)) sessionTag = 1;
         sessionTag = formatTag(sessionTag, 5);
 
-        const THREAD_ID = `${GetDate()}/${sessionTag}`;
+        const SESSION_NAME = `S/T NR#${GetDate()}/${sessionTag}`;
         const THREAD = await FORUM.threads.create({
-            name: `SESJA NR#${THREAD_ID}`,
+            name: SESSION_NAME,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-            reason: `Requested by ${CREATED_BY.username}`,
+            reason: REASON,
             message: { embeds: [embed], components: [BUTTONS] },
         });
 
