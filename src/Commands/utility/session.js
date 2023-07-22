@@ -17,13 +17,6 @@ const data = new SlashCommandBuilder()
         .setName('info')
         .setDescription('Wyświetla informację o sesji testowej'))
     .addSubcommand(subcommand => subcommand
-        .setName('setup')
-        .setDescription('Przygotowuje nowy kanał zawierający informację na temat sesji')
-        .addChannelOption(option => option
-            .setName('forum')
-            .setDescription('Forum, w którym stworzyć nowy wątek')
-            .setRequired(true)))
-    .addSubcommand(subcommand => subcommand
         .setName('new')
         .setDescription('Tworzy nową sesję testową w danej kategorii')
         .addChannelOption(option => option
@@ -78,28 +71,6 @@ async function execute(interaction) {
     const CREATED_BY = interaction.user;
     const REASON = `New Session Created By ${CREATED_BY.username}`;
 
-    if (interaction.options.getSubcommand() === 'setup') {
-        const FORUM = interaction.options.getChannel('forum');
-
-        let embed = new EmbedBuilder()
-            .setColor(Color.info)
-            .setTitle(`${Emoji.info()}  Informacje na temat sesji testowych`)
-            .setDescription(SESSION_DESC);
-
-        const THREAD = await FORUM.threads.create({
-            name: `INFORMACJE NA TEMAT SESJI TESTOWYCH`,
-            autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-            reason: REASON,
-            message: { embeds: [embed] },
-        });
-
-        embed = Embed.CreateEmbed(Embed.type.success, `Pomyślnie stworzono kanał informacyjny ${THREAD.url}`);
-        await interaction.reply({ embeds: [embed], ephemeral: true });
-
-        await THREAD.setLocked(true);
-        return await THREAD.pin();
-    }
-
     if (interaction.options.getSubcommand() === 'new') {
         const FORUM = interaction.options.getChannel('forum');
         const LINK = interaction.options.getString('link');
@@ -136,7 +107,7 @@ async function execute(interaction) {
         if (isNaN(sessionTag)) sessionTag = 1;
         sessionTag = formatTag(sessionTag, 5);
 
-        const SESSION_NAME = `S/T NR#${GetDate()}/${sessionTag}`;
+        const SESSION_NAME = `#${GetDate()}/${sessionTag}`;
         const THREAD = await FORUM.threads.create({
             name: SESSION_NAME,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
