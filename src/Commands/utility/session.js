@@ -14,9 +14,6 @@ const data = new SlashCommandBuilder()
     .setName('session')
     .setDescription('Tworzy nową sesję testową')
     .addSubcommand(subcommand => subcommand
-        .setName('info')
-        .setDescription('Wyświetla informację o sesji testowej'))
-    .addSubcommand(subcommand => subcommand
         .setName('new')
         .setDescription('Tworzy nową sesję testową w danej kategorii')
         .addChannelOption(option => option
@@ -50,15 +47,6 @@ async function execute(interaction) {
     }
 
     const formatTag = (num, places) => String(num).padStart(places, '0');
-    const SESSION_DESC = `**Czym one są?**\nSesja testowa (w skrócie: **S/T**) jest to okres w którym trwają testy nad różnymi funkcjami. Testerzy mają ustalony czas na pobranie materiałów. przetestowanie ich oraz opublikowanie wyników. Każda sesja posiada własny dedykowany kanał stwarzany gdy tylko sesja się rozpocznie.\n\n**Jak przebiega cały proces?**\nStworzony zostanie nowy wątek w forum, następnie pierwsza wiadomość będzie zawierała przycisk z linkiem do materiałów do pobrania. Testerzy po swoich próbach, wysyłają wyniki na kanał przeznaczony tej sesji z której brali materiały do testowania. Każda sesja posiada swój własny identyfikator, przykład - **S/T NR#14/6/2023/27153**.\n\n**Ile trwają sesje?**\nRóżnie, domyślnie jest to tydzień, lecz zawsze czas ten może być zmieniony. Data rozpoczęcia oraz planowana data zakończenia sesji są zawsze podane na kanale sesji.`;
-
-    if (interaction.options.getSubcommand() === 'info') {
-        const EMBED = new EmbedBuilder()
-            .setColor(Color.info)
-            .setTitle(`${Emoji.info()}  Informacje na temat sesji testowych`)
-            .setDescription(SESSION_DESC);
-        return interaction.reply({ embeds: [EMBED], ephemeral: true });
-    }
 
     if (!CheckPermissions(interaction.member)) {
         const EMBED = Embed.CreateEmbed(Embed.type.error, 'Nie posiadasz odpowiednich uprawnień do używania tej komendy!');
