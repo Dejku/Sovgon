@@ -5,9 +5,12 @@ import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
+    GuildScheduledEventManager,
+    GuildScheduledEventPrivacyLevel,
+    GuildScheduledEventEntityType,
 } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Color, Embed, Emoji, Permission, isDateValid } from '../../Utilities/Utilities.js';
+import { Color, Embed, Emoji, Permission, isDateValid, Epoch } from '../../Utilities/Utilities.js';
 import Session from '../../Data/models/sessionModel.js';
 
 const data = new SlashCommandBuilder()
@@ -24,6 +27,9 @@ const data = new SlashCommandBuilder()
             .setName('link')
             .setDescription('Link do materiałów')
             .setRequired(true))
+        .addIntegerOption(option => option
+            .setName('rozpoczęcie')
+            .setDescription('Data rozpoczęcia testów (zostaw puste aby ustawić na za 5 minut)'))
         .addIntegerOption(option => option
             .setName('zakończenie')
             .setDescription('Data zakończenia testów (zostaw puste aby ustawić na za tydzień)')))
@@ -42,9 +48,7 @@ async function execute(interaction) {
             return false;
     }
 
-    function GetDate() {
-        return `${DATE.getDate()}/${DATE.getMonth() + 1}/${DATE.getFullYear()}`;
-    }
+    const GetDate = () => `${DATE.getDate()}/${DATE.getMonth() + 1}/${DATE.getFullYear()}`;
 
     const formatTag = (num, places) => String(num).padStart(places, '0');
 
@@ -55,28 +59,30 @@ async function execute(interaction) {
 
     const DATE = new Date();
     const TODAY_EPOCH = Math.floor(DATE.getTime() / 1000);
-    const ONE_WEEK_EPOCH = 604800;
-    const CREATED_BY = interaction.user;
-    const REASON = `New Session Created By ${CREATED_BY.username}`;
+    const USER = interaction.user;
+    const GUILD = interaction.guild;
+    const REASON = `New Session Created By ${USER.username}`;
+    const EVENT_MANAGER = new GuildScheduledEventManager(GUILD);
 
     if (interaction.options.getSubcommand() === 'new') {
         const FORUM = interaction.options.getChannel('forum');
         const LINK = interaction.options.getString('link');
-        const ENDING_DATE_EPOCH = interaction.options.getInteger('zakończenie') ?? TODAY_EPOCH + ONE_WEEK_EPOCH;
+        const STARTING_DATE_EPOCH = interaction.options.getInteger('rozpoczęcie') ?? TODAY_EPOCH + Epoch.fiveMinutes;
+        const ENDING_DATE_EPOCH = interaction.options.getInteger('zakończenie') ?? TODAY_EPOCH + Epoch.oneWeek;
 
-        if (!isDateValid(new Date(ENDING_DATE_EPOCH))) {
+        if (!isDateValid(new Date(STARTING_DATE_EPOCH)) || !isDateValid(new Date(ENDING_DATE_EPOCH))) {
             const EMBED = Embed.CreateEmbed(Embed.type.error, 'Niepoprawna data!');
             return interaction.reply({ embeds: [EMBED], ephemeral: true });
         }
 
         let embed = new EmbedBuilder()
             .setColor(Color.info)
-            .setTitle(`${Emoji.info()}  Rozpoczęto sesję testową!`)
-            .setDescription(`Przed rozpoczęciem, jeśli tego jeszcze nie zrobiłeś(-aś), zapoznaj się z instrukcją w przypiętej wiadomości na samej górze tego [forum](${FORUM.url}). Następnie kliknij w przycisk "Pobierz materiały" znajdujący się poniżej, a później możesz już rozpocząć testowanie. **Udanych łowów**`)
+            .setTitle(`${Emoji.info()}  Zaplanowo nową sesję testową!`)
+            .setDescription(`Poświęć trochę swojego czasu na przetestowanie aktualnie dostępnych funkcji. Kliknij w przycisk "Pobierz materiały" znajdujący się poniżej aby pobrać wszystkie wymagane pliki. **Udanych łowów**`)
             .addFields(
-                { name: 'Rozpoczęcie', value: `<t:${TODAY_EPOCH}:R>`, inline: true },
+                { name: 'Rozpoczęcie', value: `<t:${STARTING_DATE_EPOCH}:R>`, inline: true },
                 { name: 'Zakończenie', value: `<t:${ENDING_DATE_EPOCH}:R>`, inline: true },
-                { name: 'Stworzone przez', value: `<@${CREATED_BY.id}>`, inline: true },
+                { name: 'Stworzone przez', value: `<@${USER.id}>`, inline: true },
             );
 
         const LINK_BUTTON = new ButtonBuilder()
@@ -87,7 +93,7 @@ async function execute(interaction) {
         const BUTTONS = new ActionRowBuilder()
             .addComponents(LINK_BUTTON);
 
-        let sessionTag;
+            let sessionTag;
         await Session.find().sort({ sessionTAG: -1 }).limit(1).then(result => {
             if (result.length < 1) sessionTag = 1;
             else sessionTag = result[0].sessionTAG + 1;
@@ -100,14 +106,28 @@ async function execute(interaction) {
             name: SESSION_NAME,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
             reason: REASON,
-            message: { embeds: [embed], components: [BUTTONS] },
+            message: { content: "@everyone", embeds: [embed], components: [BUTTONS] },
+        });
+        await THREAD.setLocked(true);
+
+        await EVENT_MANAGER.create({
+            name: 'Sesja Testowa',
+            description: `Identyfikator sesji: **${SESSION_NAME}**`,
+            scheduledStartTime: STARTING_DATE_EPOCH * 1000,
+            scheduledEndTime: ENDING_DATE_EPOCH * 1000,
+            privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+            entityType: GuildScheduledEventEntityType.External,
+            entityMetadata: {
+                location: THREAD.url,
+            },
+            reason: REASON,
         });
 
         await Session.create({
             sessionTAG: sessionTag,
             channelID: THREAD.id,
-            createdBy: CREATED_BY.id,
-            startingDate: TODAY_EPOCH,
+            createdBy: USER.id,
+            startingDate: STARTING_DATE_EPOCH,
             endingDate: ENDING_DATE_EPOCH,
         });
 
@@ -130,8 +150,9 @@ async function execute(interaction) {
         }
 
         let embed = new EmbedBuilder()
-            .setColor(Color.info)
-            .setTitle(`${Emoji.info()}  Sesja została zamknięta`);
+            .setColor(Color.error)
+            .setTitle(`${Emoji.error()}  Sesja została zamknięta`)
+            .setDescription(`Sesja została ręcznie zamknięta przez <@${USER.id}>`);
         await THREAD.send({ embeds: [embed] });
         await Session.updateOne({ channelID: THREAD.id }, { $set: { "isFinished": true } }).catch(error => console.error(error));
 

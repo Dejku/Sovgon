@@ -22,6 +22,10 @@ const sessionSchema = new Schema({
     type: Number,
     required: true,
   },
+  isStarted: {
+    type: Boolean,
+    default: false,
+  },
   isFinished: {
     type: Boolean,
     default: false,

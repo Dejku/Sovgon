@@ -6,21 +6,45 @@ import { Color, Emoji, Logger } from './Utilities.js';
 
 cron.schedule('* * * * *', async () => {
     try {
+        const TODAY_DATE = new Date();
+
+        function IsNow(SESSION_DATE: Date): boolean {
+            return SESSION_DATE.getDate() == TODAY_DATE.getDate() && SESSION_DATE.getMonth() == TODAY_DATE.getMonth() && SESSION_DATE.getHours() == TODAY_DATE.getHours() && SESSION_DATE.getMinutes() == TODAY_DATE.getMinutes();
+        };
+
+        await Session.find({
+            isStarted: false,
+        }).then(async results => {
+            if (results.length < 1) return;
+
+            results.forEach(async session => {
+                const SESSION_STARTING_DATE = new Date(session.startingDate * 1000);
+
+                if (IsNow(SESSION_STARTING_DATE)) {
+                    const THREAD_ID = session.channelID.toString();
+                    const THREAD = client.channels.cache.get(THREAD_ID) as ThreadChannel;
+                    if (THREAD === undefined) return Logger.error("Nie znaleziono odpowiedniego kanału podczas zamykania sesji testowej", Logger.guild.akang);
+
+                    await THREAD.setLocked(false);
+                    const EMBED = new EmbedBuilder()
+                        .setColor(Color.info)
+                        .setTitle(`${Emoji.info()}  Sesja została otwarta`);
+                    await THREAD.send({ embeds: [EMBED] });
+
+                    await Session.updateOne({ channelID: session.channelID }, { $set: { "isStarted": true } }).catch(error => console.error(error));
+                };
+            })
+        });
+
         await Session.find({
             isFinished: false,
         }).then(async results => {
             if (results.length < 1) return;
 
             results.forEach(async session => {
-                const TODAY_DATE = new Date();
-                const SESSION_ENDING_EPOCH = session.endingDate;
-                const SESSION_DATE = new Date(SESSION_ENDING_EPOCH * 1000);
+                const SESSION_ENDING_DATE = new Date(session.endingDate * 1000);
 
-                function isNow(): boolean {
-                    return SESSION_DATE.getDate() == TODAY_DATE.getDate() && SESSION_DATE.getMonth() == TODAY_DATE.getMonth() && SESSION_DATE.getHours() == TODAY_DATE.getHours() && SESSION_DATE.getMinutes() == TODAY_DATE.getMinutes();
-                };
-
-                if (isNow()) {
+                if (IsNow(SESSION_ENDING_DATE)) {
                     const THREAD_ID = session.channelID.toString();
                     const THREAD = client.channels.cache.get(THREAD_ID) as ThreadChannel;
                     if (THREAD === undefined) return Logger.error("Nie znaleziono odpowiedniego kanału podczas zamykania sesji testowej", Logger.guild.akang);

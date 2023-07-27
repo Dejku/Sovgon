@@ -14,6 +14,13 @@ export enum Permission {
     developer = 'developer',
 }
 
+export enum Epoch {
+    fiveMinutes = 300,
+    oneHour = 3600,
+    oneDay = 86400,
+    oneWeek = 604800
+}
+
 // COLORS
 export enum Color {
     success = `DarkGreen`,
