@@ -29,7 +29,7 @@ for (const FOLDER of COMMAND_FOLDERS) {
 				} else if (!command.isContextMenuCommand) {
 					console.log(`${chalk.yellowBright('WARNING')} The command at ${COMMANDS_PATH}.js is missing a required "data" or "execute" property and isn't a context menu command.`);
 				} else {
-					console.log(`Context menu command ${command.rawName} loaded.`);
+					console.log(`Context command ${command.rawName} loaded.`);
 				}
 			});
 		});
