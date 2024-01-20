@@ -36,10 +36,10 @@ cron.schedule('00 13 * * *', async () => {
 
             const EMBED = new EmbedBuilder()
                 .setTitle(`:birthday:  Dzisiejszego dnia urodziny obchodzi:  :birthday:`)
-                .setDescription(`${birthdayGuests}\n\n > *${WISH}* ${GetEmoji()}`)
+                .setDescription(`${birthdayGuests}\n\n *${WISH}* ${GetEmoji()}`)
                 .setColor(0x779ba5);
 
-            const CHANNEL_ID = '730099942227443732';
+            const CHANNEL_ID = '1197490960691634319';
 
             let channel = client.channels.cache.get(CHANNEL_ID);
 

@@ -2,37 +2,26 @@ import {
     SlashCommandBuilder,
     ThreadAutoArchiveDuration,
     EmbedBuilder,
-    ButtonBuilder,
-    ButtonStyle,
-    ActionRowBuilder,
-    GuildScheduledEventManager,
-    GuildScheduledEventPrivacyLevel,
-    GuildScheduledEventEntityType,
+    roleMention,
 } from 'discord.js';
 import client from '../../Structure/client.js';
-import { Color, Embed, Emoji, Permission, isDateValid, Epoch } from '../../Utilities/Utilities.js';
+import { Color, Embed, Emoji, Permission } from '../../Utilities/Utilities.js';
 import Session from '../../Data/models/sessionModel.js';
 
 const data = new SlashCommandBuilder()
     .setName('session')
     .setDescription('Tworzy nową sesję testową')
     .addSubcommand(subcommand => subcommand
-        .setName('new')
+        .setName('create')
         .setDescription('Tworzy nową sesję testową w danej kategorii')
         .addChannelOption(option => option
             .setName('forum')
             .setDescription('Forum, w którym stworzyć nowy wątek')
             .setRequired(true))
-        .addStringOption(option => option
-            .setName('link')
-            .setDescription('Link do materiałów')
-            .setRequired(true))
-        .addIntegerOption(option => option
-            .setName('rozpoczęcie')
-            .setDescription('Data rozpoczęcia testów (zostaw puste aby ustawić na za 5 minut)'))
-        .addIntegerOption(option => option
-            .setName('zakończenie')
-            .setDescription('Data zakończenia testów (zostaw puste aby ustawić na za tydzień)')))
+        .addAttachmentOption(option => option
+            .setName('attachment')
+            .setDescription('Załącznik jako opis sesji')
+            .setRequired(true)))
     .addSubcommand(subcommand => subcommand
         .setName('close')
         .setDescription('Zamyka wybraną sesję (zostaw puste dla aktualnego kanału)')
@@ -58,42 +47,19 @@ async function execute(interaction) {
     }
 
     const DATE = new Date();
-    const TODAY_EPOCH = Math.floor(DATE.getTime() / 1000);
     const USER = interaction.user;
-    const GUILD = interaction.guild;
     const REASON = `New Session Created By ${USER.username}`;
-    const EVENT_MANAGER = new GuildScheduledEventManager(GUILD);
 
-    if (interaction.options.getSubcommand() === 'new') {
+    if (interaction.options.getSubcommand() === 'create') {
         const FORUM = interaction.options.getChannel('forum');
-        const LINK = interaction.options.getString('link');
-        const STARTING_DATE_EPOCH = interaction.options.getInteger('rozpoczęcie') ?? TODAY_EPOCH + Epoch.fiveMinutes;
-        const ENDING_DATE_EPOCH = interaction.options.getInteger('zakończenie') ?? TODAY_EPOCH + Epoch.oneWeek;
-
-        if (!isDateValid(new Date(STARTING_DATE_EPOCH)) || !isDateValid(new Date(ENDING_DATE_EPOCH))) {
-            const EMBED = Embed.CreateEmbed(Embed.type.error, 'Niepoprawna data!');
-            return interaction.reply({ embeds: [EMBED], ephemeral: true });
-        }
+        const ATTACHMENT = interaction.options.getAttachment('attachment');
 
         let embed = new EmbedBuilder()
             .setColor(Color.info)
-            .setTitle(`${Emoji.info()}  Zaplanowo nową sesję testową!`)
-            .setDescription(`Poświęć trochę swojego czasu na przetestowanie aktualnie dostępnych funkcji. Kliknij w przycisk "Pobierz materiały" znajdujący się poniżej aby pobrać wszystkie wymagane pliki. **Udanych łowów**`)
-            .addFields(
-                { name: 'Rozpoczęcie', value: `<t:${STARTING_DATE_EPOCH}:R>`, inline: true },
-                { name: 'Zakończenie', value: `<t:${ENDING_DATE_EPOCH}:R>`, inline: true },
-                { name: 'Stworzone przez', value: `<@${USER.id}>`, inline: true },
-            );
+            .setTitle(`${Emoji.info()}  Stworzono nową sesję testową!`)
+            .setDescription(`Poświęć trochę swojego czasu na przetestowanie aktualnie dostępnych funkcji. Kliknij w przycisk "Zdobądź materiały" znajdujący się poniżej aby pobrać wszystkie wymagane pliki. **Udanych łowów**`);
 
-        const LINK_BUTTON = new ButtonBuilder()
-            .setLabel('Pobierz materiały')
-            .setStyle(ButtonStyle.Link)
-            .setURL(LINK);
-
-        const BUTTONS = new ActionRowBuilder()
-            .addComponents(LINK_BUTTON);
-
-            let sessionTag;
+        let sessionTag;
         await Session.find().sort({ sessionTAG: -1 }).limit(1).then(result => {
             if (result.length < 1) sessionTag = 1;
             else sessionTag = result[0].sessionTAG + 1;
@@ -106,30 +72,17 @@ async function execute(interaction) {
             name: SESSION_NAME,
             autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
             reason: REASON,
-            message: { content: "@everyone", embeds: [embed], components: [BUTTONS] },
-        });
-        await THREAD.setLocked(true);
-
-        await EVENT_MANAGER.create({
-            name: 'Sesja Testowa',
-            description: `Identyfikator sesji: **${SESSION_NAME}**`,
-            scheduledStartTime: STARTING_DATE_EPOCH * 1000,
-            scheduledEndTime: ENDING_DATE_EPOCH * 1000,
-            privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
-            entityType: GuildScheduledEventEntityType.External,
-            entityMetadata: {
-                location: THREAD.url,
+            message: {
+                content: roleMention('1094699484119834704'),
+                embeds: [embed],
+                files: [{
+                    attachment: ATTACHMENT.attachment,
+                    name: ATTACHMENT.name,
+                }],
             },
-            reason: REASON,
         });
 
-        await Session.create({
-            sessionTAG: sessionTag,
-            channelID: THREAD.id,
-            createdBy: USER.id,
-            startingDate: STARTING_DATE_EPOCH,
-            endingDate: ENDING_DATE_EPOCH,
-        });
+        await Session.create({ sessionTAG: sessionTag });
 
         embed = Embed.CreateEmbed(Embed.type.success, `Pomyślnie utworzono nową sesję ${THREAD.url}`);
         return interaction.reply({ embeds: [embed], ephemeral: true });
@@ -154,7 +107,6 @@ async function execute(interaction) {
             .setTitle(`${Emoji.error()}  Sesja została zamknięta`)
             .setDescription(`Sesja została ręcznie zamknięta przez <@${USER.id}>`);
         await THREAD.send({ embeds: [embed] });
-        await Session.updateOne({ channelID: THREAD.id }, { $set: { "isFinished": true } }).catch(error => console.error(error));
 
         const REPLY_TEXT = THREAD_ID ? `Pomyślnie zamknięto podaną sesję ${THREAD.url}` : "Pomyślnie zamknięto sesję";
         embed = Embed.CreateEmbed(Embed.type.success, REPLY_TEXT);

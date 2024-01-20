@@ -6,30 +6,6 @@ const sessionSchema = new Schema({
     type: Number,
     required: true,
   },
-  channelID: {
-    type: mongoose.Decimal128,
-    required: true,
-  },
-  createdBy: {
-    type: mongoose.Decimal128,
-    required: true,
-  },
-  startingDate: {
-    type: Number,
-    required: true,
-  },
-  endingDate: {
-    type: Number,
-    required: true,
-  },
-  isStarted: {
-    type: Boolean,
-    default: false,
-  },
-  isFinished: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 const Session = mongoose.model('Session', sessionSchema);

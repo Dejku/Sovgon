@@ -1,6 +1,5 @@
 import {
 	SlashCommandBuilder,
-	EmbedBuilder,
 	ModalBuilder,
 	TextInputBuilder,
 	TextInputStyle,
@@ -18,13 +17,7 @@ const data = new SlashCommandBuilder()
 		.setDescription('Otwiera post oraz umożliwia pisanie w nim'))
 	.addSubcommand(subcommand => subcommand
 		.setName('close')
-		.setDescription('Zamyka post oraz uniemożliwia dalsze pisanie w nim'))
-	.addSubcommand(subcommand => subcommand
-		.setName('claim')
-		.setDescription('Dopisuje użytkownika do listy osób zajmujących się postem'))
-	.addSubcommand(subcommand => subcommand
-		.setName('unclaim')
-		.setDescription('Wypisuje użytkownika z listy osób zajmujących się postem'));
+		.setDescription('Zamyka post oraz uniemożliwia dalsze pisanie w nim'));
 
 async function execute(interaction) {
 	if (!interaction.channel.isThread()) {
@@ -88,99 +81,6 @@ async function execute(interaction) {
 			MODAL.addComponents(STATUS_ACTION_ROW, REASON_ACTION_ROW);
 
 			return interaction.showModal(MODAL);
-		}
-	}
-
-	let claimMessage;
-	let claimMessageID = await Post.find({ postID: CHANNEL_ID }).then(result => {
-		if (result.length != 0)
-			return result[0].claimMessageID;
-	});
-	if (claimMessageID != undefined)
-		await interaction.channel.messages.fetch({ around: claimMessageID, limit: 1 }).then(result => claimMessage = result);
-
-	let claimedBy = [];
-
-	await Post.find({ postID: CHANNEL_ID }, { _id: 0, claimedBy: 1 }).then(result => {
-		if (result.length != 0)
-			claimedBy = result[0].claimedBy;
-	});
-
-	const FormatUsers = (user) => {
-		return user.map(u => `<@${u}>`);
-	};
-
-	const EmbedMessage = (description) => {
-		return new EmbedBuilder()
-			.setColor("Blue")
-			.setTitle(`:wrench: Uczestnicy prac:`)
-			.setDescription(`**${description}**`)
-			.setFooter({ text: `Aby się wypisać użyj "/post unclaim"` });
-	};
-
-	const USER = interaction.user.id;
-
-	if (interaction.options.getSubcommand() === 'claim') {
-		if (claimedBy.includes(USER)) {
-			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Jesteś już na liście');
-			return interaction.reply({ embeds: [EMBED], ephemeral: true });
-		}
-		claimedBy.push(USER);
-
-		if (claimMessageID == undefined) {
-			let EMBED = Embed.CreateEmbed(Embed.type.info, 'Tworzenie wiadomości...');
-			await interaction.deferReply({ embeds: [EMBED], fetchReply: true })
-				.then(result => claimMessageID = result.id);
-
-			Post.updateOne({ postID: CHANNEL_ID }, { claimedBy: claimedBy, claimMessageID: claimMessageID }, { upsert: true })
-				.then(async () => {
-					claimedBy = await FormatUsers(claimedBy);
-					EMBED = EmbedMessage(claimedBy);
-
-					return interaction.editReply({ embeds: [EMBED] }).then(msg => msg.pin());
-				})
-				.catch(error => console.error(error));
-		} else {
-			Post.updateOne({ postID: CHANNEL_ID }, { claimedBy: claimedBy }, { upsert: true })
-				.then(async () => {
-					claimedBy = await FormatUsers(claimedBy);
-					let EMBED = EmbedMessage(claimedBy);
-
-					await claimMessage.first().edit({ embeds: [EMBED] });
-					EMBED = Embed.CreateEmbed(Embed.type.success, 'Dopisano Cię do listy');
-					return interaction.reply({ embeds: [EMBED], ephemeral: true });
-				})
-				.catch(error => console.error(error));
-		}
-	}
-
-	if (interaction.options.getSubcommand() === 'unclaim') {
-		if (!claimedBy.includes(USER)) {
-			const EMBED = Embed.CreateEmbed(Embed.type.info, 'Spoko, nie było Cię na liście');
-			return interaction.reply({ embeds: [EMBED], ephemeral: true });
-		}
-		claimedBy = claimedBy.filter(user => user !== USER);
-
-		if (claimedBy.length == 0) {
-			Post.deleteOne({ postID: CHANNEL_ID })
-				.then(async () => {
-					await claimMessage.first().delete();
-
-					const EMBED = Embed.CreateEmbed(Embed.type.success, 'Usunięto Cię z listy. Nie pozostał na niej nikt, więc została usunięta');
-					return interaction.reply({ embeds: [EMBED], ephemeral: true });
-				})
-				.catch(error => console.error(error));
-		} else {
-			Post.updateOne({ postID: CHANNEL_ID }, { claimedBy: claimedBy })
-				.then(async () => {
-					claimedBy = await FormatUsers(claimedBy);
-					let EMBED = EmbedMessage(claimedBy);
-
-					await claimMessage.first().edit({ embeds: [EMBED] });
-					EMBED = Embed.CreateEmbed(Embed.type.success, 'Usunięto Cię z listy');
-					return interaction.reply({ embeds: [EMBED], ephemeral: true });
-				})
-				.catch(error => console.error(error));
 		}
 	}
 }
