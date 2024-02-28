@@ -1,6 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
-import Post from '../Data/models/postModel.js';
-import { Logger, Embed, Emoji, Color } from "../Utilities/Utilities.js";
+import { Logger, Embed } from "../Utilities/Utilities.js";
 
 const name = 'interactionCreate';
 async function execute(interaction) {
@@ -12,14 +10,6 @@ async function execute(interaction) {
 			return true;
 
 		return false;
-	}
-
-	function CapitalizeFirstLetters(string) {
-		return string
-			.toLowerCase()
-			.split(' ')
-			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-			.join(' ');
 	}
 
 	if (interaction.isChatInputCommand()) {
@@ -43,29 +33,6 @@ async function execute(interaction) {
 				return interaction.followUp({ embeds: [EMBED], ephemeral: true });
 			else
 				return interaction.reply({ embeds: [EMBED], ephemeral: true });
-		}
-	}
-
-	if (interaction.isModalSubmit()) {
-		const CHANNEL_ID = interaction.channel.id;
-
-		if (interaction.customId === 'closingPost') {
-			let reason = interaction.fields.getTextInputValue('closingReason');
-			const STATUS = interaction.fields.getTextInputValue('closingstatus');
-			let lockMessageID;
-
-			if (reason == "") reason = 'Brak podanego powodu';
-
-			const EMBED = new EmbedBuilder()
-				.setColor(Color.info)
-				.setTitle(`${Emoji.info()} Post zamknięty`)
-				.setDescription(`**Status**: ${CapitalizeFirstLetters(STATUS)}\n**Powód**: ${reason}`)
-				.setFooter({ text: `Aby odblokować użyj "/post open"` });
-
-			await interaction.reply({ embeds: [EMBED], fetchReply: true })
-				.then(result => lockMessageID = result.id);
-			await interaction.channel.setLocked(true, `Closed requested by ${interaction.user.username.toString()}`);
-			return Post.updateOne({ postID: CHANNEL_ID }, { lockMessageID: lockMessageID }, { upsert: true });
 		}
 	}
 
